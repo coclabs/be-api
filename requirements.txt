@@ -1,0 +1,7 @@
+click
+cx-Oracle  # to be removed
+fastapi
+passlib
+psycopg2
+SQLAlchemy
+uvicorn
