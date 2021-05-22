@@ -21,7 +21,7 @@ jobs:
           username: ${{ secrets.DEV_USER }}
           password: ${{ secrets.DEV_PASSWD }}
           port: ${{ secrets.PORT }}
-          script: systemctl stop coc-api.service                           &&
+          script: systemctl stop coc-api.service                           ;
                     cd /srv                                                &&
                     rm -rf be-api                                          &&
                     git clone https://github.com/coclabs/be-api.git        &&
@@ -30,3 +30,11 @@ jobs:
                     git pull                                               &&
                     pip3.9 install -r requirements.txt -c constraints.txt  &&
                     systemctl start coc-api.service
+      - name: notify discord
+        uses: sarisia/actions-status-discord@v1.8.5
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: inject-source
+          description: Development codebase deploy via ssh source injection
+          username: GitHub Actions
