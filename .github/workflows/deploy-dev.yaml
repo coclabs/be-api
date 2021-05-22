@@ -8,17 +8,17 @@ on:
 #      - develop
 #    types: [closed]
 jobs:
-  build:
+  inject-source:
 #    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     environment:
       name: Develop
     steps:
-      - name: execute clone be-api
+      - name: execute commands via ssh
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.DEV_MACHINE }}
           username: ${{ secrets.DEV_USER }}
           password: ${{ secrets.DEV_PASSWD }}
           port: ${{ secrets.PORT }}
-          script: cd /srv/be-api && git checkout develop && git pull || clone https://github.com/coclabs/be-api.git
+          script: cd /srv/be-api && git checkout develop && git pull || git clone https://github.com/coclabs/be-api.git
