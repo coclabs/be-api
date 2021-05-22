@@ -17,7 +17,7 @@ jobs:
       - name: execute clone be-api
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secret.DEV_MACHINE }}
+          host: ${{ secrets.DEV_MACHINE }}
           username: ${{ secrets.DEV_USER }}
           password: ${{ secrets.DEV_PASSWD }}
           port: ${{ secrets.PORT }}
