@@ -1,15 +1,23 @@
+import sentry_sdk
+
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Depends, FastAPI, HTTPException
+from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from db import crud,schemas,database,model
 
 from sqlalchemy.orm import Session
 
+sentry_sdk.init(
+    dsn='https://e080634f64af4ee7babd2dcb2545c7f6@o708708.ingest.sentry.io/5778772',
+    traces_sample_rate=1.0
+)
 
-model.Base.metadata.create_all(bind=database.engine)
 app = FastAPI()
 
-
+app.add_middleware(
+    SentryAsgiMiddleware
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,6 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+model.Base.metadata.create_all(bind=database.engine)
 
 
 # Dependency
