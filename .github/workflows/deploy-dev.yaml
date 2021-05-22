@@ -21,4 +21,10 @@ jobs:
           username: ${{ secrets.DEV_USER }}
           password: ${{ secrets.DEV_PASSWD }}
           port: ${{ secrets.PORT }}
-          script: cd /srv/be-api && git checkout develop && git pull || git clone https://github.com/coclabs/be-api.git
+          script: systemctl stop python-exec.service                    &&
+                    cd /srv                                             &&
+                    rm -rf be-api                                       &&
+                    git clone https://github.com/coclabs/be-api.git     &&
+                    cd be-api                                           &&
+                    git pull                                            &&
+                    systemctl start python-exec.service
