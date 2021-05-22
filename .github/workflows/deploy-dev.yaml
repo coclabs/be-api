@@ -19,6 +19,6 @@ jobs:
         with:
           host: ${{ secrets.DEV_MACHINE }}
           username: ${{ secrets.DEV_USER }}
-          password: ${{ secrets.DEV_PASSWD }}
+          password: 'dummy'
           port: ${{ secrets.PORT }}
           script: cd /srv/be-api && git clone https://github.com/coclabs/be-api.git
