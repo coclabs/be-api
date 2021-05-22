@@ -35,6 +35,6 @@ jobs:
         if: always()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          title: inject-source
+          title: Deploy dev be-api
           description: Development codebase deploy via ssh source injection
           username: GitHub Actions
