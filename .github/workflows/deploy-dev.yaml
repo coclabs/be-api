@@ -21,4 +21,4 @@ jobs:
           username: ${{ secrets.DEV_USER }}
           password: ${{ secrets.DEV_PASSWD }}
           port: ${{ secrets.PORT }}
-          script: cd /srv/be-api && {git checkout develop && git pull} || clone https://github.com/coclabs/be-api.git
+          script: cd /srv/be-api && git checkout develop && git pull || clone https://github.com/coclabs/be-api.git
