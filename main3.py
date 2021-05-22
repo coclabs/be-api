@@ -9,7 +9,7 @@ from db import crud,schemas,database,model
 from sqlalchemy.orm import Session
 
 sentry_sdk.init(
-    dsn='https://e080634f64af4ee7babd2dcb2545c7f6@o708708.ingest.sentry.io/5778772',
+    dsn='https://90f598eff54d4d35bc35de577aceef59@o525207.ingest.sentry.io/5778802',
     traces_sample_rate=1.0
 )
 
