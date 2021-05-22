@@ -26,6 +26,7 @@ jobs:
                     rm -rf be-api                                          &&
                     git clone https://github.com/coclabs/be-api.git        &&
                     cd be-api                                              &&
+                    git checkout develop                                   &&
                     git pull                                               &&
                     pip3.9 install -r requirements.txt -c constraints.txt  &&
                     systemctl start coc-api.service
