@@ -1,7 +1,7 @@
-from typing import List, Optional
+from typing import List, Optional,Tuple
 import array as arr
 from pydantic import BaseModel
-
+import numpy as np
 class ItemBase(BaseModel):
     title: str
     description: Optional[str] = None
@@ -16,7 +16,7 @@ class Item(ItemBase):
     owner_id: int
 
     class Config:
-        orm_mode = True
+        orm_mode = True 
 
 
 class UserBase(BaseModel):
@@ -166,6 +166,7 @@ class AssignmentForm(BaseModel):
     disableat:str
     invisibleat:str   
     assignmentid:int
+    question: List[QuestionResponse] = []
     class Config:
         orm_mode = True       
 
@@ -186,3 +187,25 @@ class AssignmentQuestionForm(BaseModel):
 
 class Questionid(BaseModel):
    questionid:int
+
+class ArrayQuestionid(BaseModel):
+   questionid:List[int]=[]
+class Assignmentid(BaseModel):
+   assignmentid:int
+ 
+
+class ArrayAssignmentid(BaseModel):
+   assignmentid:List[int]=[]
+class Assignmentwithnoquesid(BaseModel):
+    assignmentname: str
+    assignmentdescription: str 
+    maxpossiblescore:int
+    visibleat:str
+    avaliableat:str
+    disableat:str
+    invisibleat:str
+    assignmentid:int  
+
+class UpdateAssignmentQuestion(BaseModel):
+   assignmentid:int
+   questionid:List[int]=[]
