@@ -104,7 +104,7 @@ class AssignmentQuestion(Base):
 
     questionid = Column(Integer, ForeignKey('question.questionid'), primary_key=True)
     assignmentid = Column(Integer, ForeignKey('assignment.assignmentid'), primary_key=True)
-   
+
     assignment = relationship("Assignment", back_populates="question")
     question = relationship("Question", back_populates="assignment")
 
