@@ -7,7 +7,7 @@ import time
 import datetime 
 from sqlalchemy import delete
 from sqlalchemy import desc
-
+from typing import List,Tuple
 
 def get_user(db: Session, user_id: int):
     return db.query(model.User).filter(model.User.id == user_id).first()
@@ -89,6 +89,10 @@ def get_questions(db: Session,page:int):
    
     return db.query(model.Question).order_by(model.Question.questionid.asc()).offset(skip).limit(limit).all()
 
+def get_questionbyquestionid(db: Session,questionid:int):
+   
+ 
+    return db.query(model.Question).filter(model.AssignmentQuestion.questionid == questionid).first()
 def get_questionpage(db: Session):
    
    
@@ -102,10 +106,10 @@ def create_assignment(db: Session , assignment:schemas.AssignmentForm):
     assignmentdescription=assignment.assignmentdescription,
     maxpossiblescore=assignment.maxpossiblescore,
   
-    visibleat=  datetime.datetime.strptime(assignment.visibleat.replace("T"," "), '%Y-%m-%d %H:%M')   ,
-    avaliableat=datetime.datetime.strptime(assignment.avaliableat.replace("T"," "), '%Y-%m-%d %H:%M'),
-    disableat=datetime.datetime.strptime(assignment.disableat.replace("T"," "), '%Y-%m-%d %H:%M'),
-    invisibleat=datetime.datetime.strptime(assignment.invisibleat.replace("T"," "), '%Y-%m-%d %H:%M')
+    visibleat=assignment.visibleat.replace("T"," ").replace(":00",""),
+    avaliableat=assignment.avaliableat.replace("T"," ").replace(":00",""),
+    disableat=assignment.disableat.replace("T"," ").replace(":00",""),
+    invisibleat=assignment.invisibleat.replace("T"," ").replace(":00","")
     
     )
     db.add(db_test)
@@ -121,7 +125,7 @@ def create_exam(db: Session , exam:schemas.ExamForm):
     maxpossiblescore=exam.maxpossiblescore,
 
 
-    visibleat=  datetime.datetime.strptime(exam.visibleat.replace("T"," "), '%Y-%m-%d %H:%M')   ,
+    visibleat= datetime.datetime.strptime(exam.visibleat.replace("T"," "), '%Y-%m-%d %H:%M')   ,
     avaliableat=datetime.datetime.strptime(exam.avaliableat.replace("T"," "), '%Y-%m-%d %H:%M'),
     disableat=datetime.datetime.strptime(exam.disableat.replace("T"," "), '%Y-%m-%d %H:%M'),
     invisibleat=datetime.datetime.strptime(exam.invisibleat.replace("T"," "), '%Y-%m-%d %H:%M')
@@ -156,8 +160,9 @@ def get_assignments(db: Session,page:int):
    
     limit=10
     skip=page*10-10
-   
-    return db.query(model.Assignment).offset(skip).limit(limit).all()
+    assignment=db.query(model.Assignment).order_by(model.Assignment.assignmentid.asc()).offset(skip).limit(limit).all()
+    print(assignment)
+    return assignment
 def delete_onequestion(db: Session,questionid:int):
     db.query(model.AssignmentQuestion).filter(model.AssignmentQuestion.questionid == questionid).delete()
     db.query(model.Test).filter(model.Test.question_id == questionid).delete()
@@ -181,4 +186,84 @@ def update_question(db: Session,questiontest:schemas.QuestionTestForm):
     db.commit()
     return   0
   
+def delete_multiplequestion(db: Session,questionid:schemas.ArrayQuestionid):
+    
+ 
+ 
+         
+    for x in questionid.questionid :
+         db.query(model.AssignmentQuestion).filter(model.AssignmentQuestion.questionid ==  x).delete()
+         db.query(model.Test).filter(model.Test.question_id == x).delete()
+         db.query(model.Question).filter(model.Question.questionid == x).delete()     
+                   
+    db.commit()
+    return   0  
+
+def delete_oneassignment(db: Session,assignmentid:schemas.Assignmentid):
+    db.query(model.AssignmentQuestion).filter(model.AssignmentQuestion.assignmentid == assignmentid).delete()
+    db.query(model.Assignment).filter(model.Assignment.assignmentid == assignmentid).delete()
+    db.commit()
+    
+    return   0
+
+    
+def delete_multipleassignment(db: Session,assignmentid:schemas.ArrayAssignmentid):
+    
+ 
+ 
+         
+    for x in assignmentid.assignmentid :
+         db.query(model.AssignmentQuestion).filter(model.AssignmentQuestion.assignmentid ==  x).delete()
+         db.query(model.Assignment).filter(model.Assignment.assignmentid == x).delete()     
+                   
+    db.commit()
+    return   0     
+
+def getquestionbyassignmentid(db: Session,assignmentid:schemas.Assignmentid):
+    #  db.query(model.Question,model.Test).join(model.AssignmentQuestion).filter(model.AssignmentQuestion.assignmentid ==  assignmentid.assignmentid).all()
+
+  
+    return db.query(model.Question).join(model.AssignmentQuestion).filter(model.AssignmentQuestion.assignmentid ==  assignmentid.assignmentid).all()
+    
+    
+def update_assignment(db: Session,assignmentquestion:schemas.Assignmentwithnoquesid):
+    
+ 
+
+    assignmentquestion.visibleat=assignmentquestion.visibleat.replace("T"," ").replace(":00","")
+    assignmentquestion.avaliableat=assignmentquestion.avaliableat.replace("T"," ").replace(":00","")
+    assignmentquestion.disableat=assignmentquestion.disableat.replace("T"," ").replace(":00","")
+    assignmentquestion.invisibleat=assignmentquestion.invisibleat.replace("T"," ").replace(":00","")
+
    
+
+    db.query(model.Assignment).filter(model.Assignment.assignmentid == assignmentquestion.assignmentid).update({"visibleat": (assignmentquestion.visibleat)})
+    db.query(model.Assignment).filter(model.Assignment.assignmentid == assignmentquestion.assignmentid).update({"avaliableat": (assignmentquestion.avaliableat)})
+    db.query(model.Assignment).filter(model.Assignment.assignmentid == assignmentquestion.assignmentid).update({"disableat": (assignmentquestion.disableat)})
+    db.query(model.Assignment).filter(model.Assignment.assignmentid == assignmentquestion.assignmentid).update({"invisibleat": (assignmentquestion.invisibleat)})
+    db.query(model.Assignment).filter(model.Assignment.assignmentid == assignmentquestion.assignmentid).update({"assignmentname": (assignmentquestion.assignmentname)})
+    db.query(model.Assignment).filter(model.Assignment.assignmentid == assignmentquestion.assignmentid).update({"assignmentdescription": (assignmentquestion.assignmentdescription)})
+    db.query(model.Assignment).filter(model.Assignment.assignmentid == assignmentquestion.assignmentid).update({"maxpossiblescore": (assignmentquestion.maxpossiblescore)})
+    db.commit()
+    return 0
+
+def update_assignmentquestion(db: Session,assignmentquestion:schemas.UpdateAssignmentQuestion):
+    
+    db.query(model.AssignmentQuestion).filter(model.AssignmentQuestion.assignmentid == assignmentquestion.assignmentid ).delete()
+    for x in assignmentquestion.questionid :
+       db_test = model.AssignmentQuestion(assignmentid=assignmentquestion.assignmentid,questionid=x)
+       db.add(db_test)
+       db.commit()
+             
+ 
+    db.commit()
+    return 0
+
+
+def get_questionbyassignmentid(db: Session,assignmentid:int):
+    
+    
+    
+    
+    return db.query(model.Question,model.Test).join(model.AssignmentQuestion).join(model.Test).filter(model.AssignmentQuestion.assignmentid == assignmentid).all()
+    

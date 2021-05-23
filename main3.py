@@ -145,7 +145,7 @@ def read_showtenquestionpost(page:schemas.page, db: Session = Depends(get_db)):
 @app.post("/createassignmentquestion/")
 def create_assignmentquestion(assignmentquestion: schemas.AssignmentQuestionForm, db: Session = Depends(get_db)):
     createdassignment = crud.create_assignment(db=db,assignment=assignmentquestion)
-    
+     
     return crud.create_assignmentquestion(db=db, assigmentquestion=assignmentquestion, assignmentid=createdassignment.assignmentid)
     
 
@@ -163,9 +163,10 @@ def read_assignmentpage(db: Session = Depends(get_db)):
 @app.get("/showtenassignment/{page}")
 def read_showtenassignment(page:int, db: Session = Depends(get_db)):
     assignments = crud.get_assignments(db, page=page)
+    
     return assignments
 
-@app.post("/showtenassignmentpost/", )
+@app.post("/showtenassignmentpost/")
 def read_showtenquestionpost(page:schemas.page, db: Session = Depends(get_db)):
     assignments = crud.get_assignments(db, page=page.page)
     return assignments 
@@ -180,3 +181,50 @@ def update_question(questiontest:schemas.QuestionTestForm, db: Session = Depends
  
     return  crud.update_question(db,questiontest=questiontest)
 
+@app.post("/multipledeletequestion/")
+def delete_multiplequestion(questionid:schemas.ArrayQuestionid, db: Session = Depends(get_db)):
+ 
+    return  crud.delete_multiplequestion(db,questionid=questionid)
+
+@app.post("/deleteoneassignment/")
+def delete_onequestion(assignmentid:schemas.Assignmentid, db: Session = Depends(get_db)):
+ 
+    return  crud.delete_oneassignment(db,assignmentid=assignmentid.assignmentid)
+
+
+@app.post("/multipledeleteassignment/")
+def delete_multipleassignment(assignmentid:schemas.ArrayAssignmentid, db: Session = Depends(get_db)):
+ 
+    return  crud.delete_multipleassignment(db,assignmentid=assignmentid)
+
+
+@app.post("/findquestionbyassignmentid/")
+def getquestionbyassignmentid(assignmentid:schemas.Assignmentid, db: Session = Depends(get_db)):
+    
+ 
+    
+    return   crud.getquestionbyassignmentid(db,assignmentid=assignmentid)
+
+
+@app.post("/updateassignment/")
+def update_question(assignmentquestion: schemas.Assignmentwithnoquesid,db: Session = Depends(get_db)):
+ 
+    return  crud.update_assignment(db,assignmentquestion=assignmentquestion)
+
+@app.post("/updateassignmentquestion/")
+def update_assignmentquestion(assignmentquestion: schemas.UpdateAssignmentQuestion,db: Session = Depends(get_db)):
+ 
+    return  crud.update_assignmentquestion(db,assignmentquestion=assignmentquestion)
+
+@app.get("/getquestionbyquestionid/{questionid}",response_model=schemas.QuestionResponse)
+def read_showtenassignment(questionid:int, db: Session = Depends(get_db)):
+    question = crud.get_questionbyquestionid(db,questionid=questionid)
+    
+    return question
+
+
+@app.get("/getquestionbyassignmentid/{assignmentid}")
+def read_showtenassignment(assignmentid:int, db: Session = Depends(get_db)):
+    
+    return crud.get_questionbyassignmentid(db,assignmentid=assignmentid)
+    
