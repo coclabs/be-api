@@ -6,3 +6,4 @@ psycopg2
 SQLAlchemy
 uvicorn
 sentry-sdk
+numpy
