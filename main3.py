@@ -1,9 +1,12 @@
-from typing import List
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi import Depends, FastAPI, HTTPException
-from db import crud,schemas,database,model
+import json
 import httpx
+
+from typing import List
+
+from db import crud,schemas,database,model
 from sqlalchemy.orm import Session
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
 
 model.Base.metadata.create_all(bind=database.engine)
@@ -234,8 +237,8 @@ def read_showtenassignment( db: Session = Depends(get_db)):
     
     code=schemas.code(language="python",value="def hello(avg):\n if avg>=91 and avg<=100: return 5\n  else: return 5",version="3.9.2")
     context=schemas.context(test="assert_equal(actual=hello(80), expected=5, pass_score=5)",scoring="any_pass",mode="submit")
-    encoded_code = jsonable_encoder(code.dict())
-    encoded_context = jsonable_encoder(context.dict())
-    r = httpx.post('https://xc.pdm-dev.me/', data={'code': encoded_code,'context':encoded_context})
+    encoded_code = jsonable_encoder(code)
+    encoded_context = jsonable_encoder(context)
+    r = httpx.post('http://localhost:8080/', json={'code': encoded_code,'context':encoded_context})
     return r.text
     

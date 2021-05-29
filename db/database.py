@@ -15,7 +15,7 @@ import cx_Oracle
 #         service_name='orcl',
 #     )
 # )
-connection_url = 'postgresql+psycopg2://postgres:1234@localhost:5432/postgres'
+connection_url = 'postgresql+psycopg2://postgres:1234@119.59.113.163:5432/postgres'
 engine = create_engine(connection_url)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
