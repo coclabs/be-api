@@ -1,24 +1,15 @@
-import sentry_sdk
-
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Depends, FastAPI, HTTPException
-from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from db import crud,schemas,database,model
-
+import httpx
 from sqlalchemy.orm import Session
+from fastapi.encoders import jsonable_encoder
 
-sentry_sdk.init(
-    dsn='https://90f598eff54d4d35bc35de577aceef59@o525207.ingest.sentry.io/5778802',
-    traces_sample_rate=1.0,
-    environment='develop'
-)
-
+model.Base.metadata.create_all(bind=database.engine)
 app = FastAPI()
 
-app.add_middleware(
-    SentryAsgiMiddleware
-)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,7 +18,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-model.Base.metadata.create_all(bind=database.engine)
 
 
 # Dependency
@@ -237,4 +227,15 @@ def read_showtenassignment(questionid:int, db: Session = Depends(get_db)):
 def read_showtenassignment(assignmentid:int, db: Session = Depends(get_db)):
     
     return crud.get_questionbyassignmentid(db,assignmentid=assignmentid)
+    
+@app.get("/gogo")
+def read_showtenassignment( db: Session = Depends(get_db)):
+
+    
+    code=schemas.code(language="python",value="def hello(avg):\n if avg>=91 and avg<=100: return 5\n  else: return 5",version="3.9.2")
+    context=schemas.context(test="assert_equal(actual=hello(80), expected=5, pass_score=5)",scoring="any_pass",mode="submit")
+    encoded_code = jsonable_encoder(code.dict())
+    encoded_context = jsonable_encoder(context.dict())
+    r = httpx.post('https://xc.pdm-dev.me/', data={'code': encoded_code,'context':encoded_context})
+    return r.text
     

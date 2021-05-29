@@ -7,3 +7,4 @@ SQLAlchemy
 uvicorn
 sentry-sdk
 numpy
+httpx

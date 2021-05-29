@@ -209,3 +209,14 @@ class Assignmentwithnoquesid(BaseModel):
 class UpdateAssignmentQuestion(BaseModel):
    assignmentid:int
    questionid:List[int]=[]
+
+class code(BaseModel):
+    language:str
+    version:str
+    value:str
+
+
+class context(BaseModel):
+    test:str
+    scoring:str
+    mode:str    
