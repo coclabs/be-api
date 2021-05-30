@@ -3,7 +3,7 @@ import httpx
 
 from typing import List
 
-from db import crud,schemas,database,model
+from db import codingcrud,schemas,database,model
 from sqlalchemy.orm import Session
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -112,26 +112,26 @@ def create_questionwithtest(questiontest:schemas.QuestionTestForm,db: Session = 
     test=schemas.TestForm(testsolution=questiontest.testsolution,testcases=questiontest.testcases,exampletestcases=questiontest.exampletestcases,testframework=questiontest.testframework,testlanquage=questiontest.testlanquage)
   
   
-    questiona =crud.create_question(db=db, question=question)
-    testa=crud.create_question_test(db=db,test=test,question_id=questiona.questionid)
+    questiona =codingcrud.create_question(db=db, question=question)
+    testa=codingcrud.create_question_test(db=db,test=test,question_id=questiona.questionid)
     
     return {'question':questiona,'asd':'asd'}
 
 
 @app.get("/showtenquestions/{number}", response_model=List[schemas.QuestionResponse])
 def read_showtenquestion(number:int, db: Session = Depends(get_db)):
-    questions = crud.get_questions(db, number)
+    questions = codingcrud.get_questions(db, number)
     return questions
     
 
 @app.get("/questionpage/")
 def read_questionpage(db: Session = Depends(get_db)):
-    questionpage = crud.get_questionpage(db)
+    questionpage = codingcrud.get_questionpage(db)
     return questionpage
     
 @app.post("/showtenquestionspost/", response_model=List[schemas.QuestionResponse])
 def read_showtenquestionpost(page:schemas.page, db: Session = Depends(get_db)):
-    questions = crud.get_questions(db, page=page.page)
+    questions = codingcrud.get_questions(db, page=page.page)
     return questions
 
 
@@ -147,58 +147,58 @@ def read_showtenquestionpost(page:schemas.page, db: Session = Depends(get_db)):
    
 @app.post("/createassignmentquestion/")
 def create_assignmentquestion(assignmentquestion: schemas.AssignmentQuestionForm, db: Session = Depends(get_db)):
-    createdassignment = crud.create_assignment(db=db,assignment=assignmentquestion)
+    createdassignment = codingcrud.create_assignment(db=db,assignment=assignmentquestion)
      
-    return crud.create_assignmentquestion(db=db, assigmentquestion=assignmentquestion, assignmentid=createdassignment.assignmentid)
+    return codingcrud.create_assignmentquestion(db=db, assigmentquestion=assignmentquestion, assignmentid=createdassignment.assignmentid)
     
 
 @app.get("/showallquestions/", response_model=List[schemas.QuestionResponse])
 def read_showallquestion( db: Session = Depends(get_db)):
-    questions = crud.get_allquestions(db)
+    questions = codingcrud.get_allquestions(db)
     return questions
 
 
 @app.get("/assignmentpage/")
 def read_assignmentpage(db: Session = Depends(get_db)):
-    assignmentpage = crud.get_assignmentpage(db)
+    assignmentpage = codingcrud.get_assignmentpage(db)
     return assignmentpage
     
 @app.get("/showtenassignment/{page}")
 def read_showtenassignment(page:int, db: Session = Depends(get_db)):
-    assignments = crud.get_assignments(db, page=page)
+    assignments = codingcrud.get_assignments(db, page=page)
     
     return assignments
 
 @app.post("/showtenassignmentpost/")
 def read_showtenquestionpost(page:schemas.page, db: Session = Depends(get_db)):
-    assignments = crud.get_assignments(db, page=page.page)
+    assignments = codingcrud.get_assignments(db, page=page.page)
     return assignments 
 
 @app.post("/deleteonequestion/")
 def delete_onequestion(questionid:schemas.Questionid, db: Session = Depends(get_db)):
  
-    return  crud.delete_onequestion(db,questionid=questionid.questionid)
+    return  codingcrud.delete_onequestion(db,questionid=questionid.questionid)
 
 @app.post("/updatequestion/")
 def update_question(questiontest:schemas.QuestionTestForm, db: Session = Depends(get_db)):
  
-    return  crud.update_question(db,questiontest=questiontest)
+    return  codingcrud.update_question(db,questiontest=questiontest)
 
 @app.post("/multipledeletequestion/")
 def delete_multiplequestion(questionid:schemas.ArrayQuestionid, db: Session = Depends(get_db)):
  
-    return  crud.delete_multiplequestion(db,questionid=questionid)
+    return  codingcrud.delete_multiplequestion(db,questionid=questionid)
 
 @app.post("/deleteoneassignment/")
 def delete_onequestion(assignmentid:schemas.Assignmentid, db: Session = Depends(get_db)):
  
-    return  crud.delete_oneassignment(db,assignmentid=assignmentid.assignmentid)
+    return  codingcrud.delete_oneassignment(db,assignmentid=assignmentid.assignmentid)
 
 
 @app.post("/multipledeleteassignment/")
 def delete_multipleassignment(assignmentid:schemas.ArrayAssignmentid, db: Session = Depends(get_db)):
  
-    return  crud.delete_multipleassignment(db,assignmentid=assignmentid)
+    return  codingcrud.delete_multipleassignment(db,assignmentid=assignmentid)
 
 
 @app.post("/findquestionbyassignmentid/")
@@ -206,22 +206,22 @@ def getquestionbyassignmentid(assignmentid:schemas.Assignmentid, db: Session = D
     
  
     
-    return   crud.getquestionbyassignmentid(db,assignmentid=assignmentid)
+    return   codingcrud.getquestionbyassignmentid(db,assignmentid=assignmentid)
 
 
 @app.post("/updateassignment/")
 def update_question(assignmentquestion: schemas.Assignmentwithnoquesid,db: Session = Depends(get_db)):
  
-    return  crud.update_assignment(db,assignmentquestion=assignmentquestion)
+    return  codingcrud.update_assignment(db,assignmentquestion=assignmentquestion)
 
 @app.post("/updateassignmentquestion/")
 def update_assignmentquestion(assignmentquestion: schemas.UpdateAssignmentQuestion,db: Session = Depends(get_db)):
  
-    return  crud.update_assignmentquestion(db,assignmentquestion=assignmentquestion)
+    return  codingcrud.update_assignmentquestion(db,assignmentquestion=assignmentquestion)
 
 @app.get("/getquestionbyquestionid/{questionid}",response_model=schemas.QuestionResponse)
 def read_showtenassignment(questionid:int, db: Session = Depends(get_db)):
-    question = crud.get_questionbyquestionid(db,questionid=questionid)
+    question = codingcrud.get_questionbyquestionid(db,questionid=questionid)
     
     return question
 
@@ -229,16 +229,16 @@ def read_showtenassignment(questionid:int, db: Session = Depends(get_db)):
 @app.get("/getquestionbyassignmentid/{assignmentid}")
 def read_showtenassignment(assignmentid:int, db: Session = Depends(get_db)):
     
-    return crud.get_questionbyassignmentid(db,assignmentid=assignmentid)
+    return codingcrud.get_questionbyassignmentid(db,assignmentid=assignmentid)
     
-@app.get("/gogo")
-def read_showtenassignment( db: Session = Depends(get_db)):
+@app.post("/gogo")
+def read_showtenassignment(code: schemas.code,context:schemas.context ,db: Session = Depends(get_db)):
 
     
-    code=schemas.code(language="python",value="def hello(avg):\n if avg>=91 and avg<=100: return 5\n  else: return 5",version="3.9.2")
-    context=schemas.context(test="assert_equal(actual=hello(80), expected=5, pass_score=5)",scoring="any_pass",mode="submit")
+    code=schemas.code(version="3.9.2",language="python",value=code.value)
+    context=schemas.context(test=context.test,scoring="any_pass",mode="submit")
     encoded_code = jsonable_encoder(code)
     encoded_context = jsonable_encoder(context)
-    r = httpx.post('http://localhost:8080/', json={'code': encoded_code,'context':encoded_context})
+    r = httpx.post('https://xc.pdm-dev.me/api/codes', json={'code': encoded_code,'context':encoded_context})
     return r.text
     
