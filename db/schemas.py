@@ -186,3 +186,18 @@ class AssignmentQuestionForm(BaseModel):
 
 class Questionid(BaseModel):
    questionid:int
+
+
+class TeacherCreate(BaseModel):
+    fistname:str
+    lastname:str
+    password:str
+    username:str
+
+
+
+class CourseCreate(BaseModel):
+    coursename:str
+    coursedescription:str
+    courseobjective:str
+   

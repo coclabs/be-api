@@ -180,3 +180,54 @@ def update_question(questiontest:schemas.QuestionTestForm, db: Session = Depends
  
     return  crud.update_question(db,questiontest=questiontest)
 
+#endofrelease1 nextis api classroom
+
+@app.post("/createteacher")
+def create_teacher(teacher:schemas.TeacherCreate, db: Session = Depends(get_db)):
+ 
+    return  classroomcrud.create_teacher(db,teacher=teacher)
+
+@app.post("/createcourseteacher")
+def create_course_teacher(course:schemas.CourseCreate,teacherid:int db: Session = Depends(get_db)):
+      #teacherid need to change for use token to find teacherid
+    course = classroomcrud.create_course(db,course=course)
+
+    return   classroomcrud.create_course_teacher(courseid=course.courseid,teacherid=teacherid) 
+
+
+# @app.post("/token")
+# def login_for_access_token(user: userschemas.UserCreate):
+      
+#     user = authenticate_user(db, user.email, user.password)
+#     if not user:
+#         raise HTTPException(
+#             status_code=status.HTTP_401_UNAUTHORIZED,
+#             detail="Incorrect username or password",
+#             headers={"WWW-Authenticate": "Bearer"},
+#         )
+#     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+#     access_token = create_access_token(
+#     data={"sub": user.email}, expires_delta=access_token_expires)
+#     return {'accesstoken':access_token}  
+   
+# @app.post("/")
+# async def get_current_user(token: str ):
+#     credentials_exception = HTTPException(
+#         status_code="status.HTTP_401_UNAUTHORIZED",
+#         detail="Could not validate credentials",
+#         headers={"WWW-Authenticate": "Bearer"},
+#     )
+#     try:
+#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+#         username: str = payload.get("sub")
+#         if username is None:
+#             raise credentials_exception
+       
+
+        
+#     except JWTError:
+#         raise credentials_exception
+#     user = get_user(db, username)
+#     if user is None:
+#         raise credentials_exception
+#     return user
