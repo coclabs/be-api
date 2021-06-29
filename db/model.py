@@ -115,4 +115,34 @@ class AssignmentQuestion(Base):
 
 #     question = relationship("Question", back_populates="tag")
 #     tag = relationship("Tag", back_populates="question")
-       
+
+class Course(Base):
+    __tablename__ = 'course'
+
+    courseid = Column(Integer, primary_key=True, index=True)
+    coursename = Column(String, index=True,nullable=False)
+    coursedescription = Column(String, index=True,nullable=False)
+    courseobjective = Column(String, index=True,nullable=False)
+    teacher = relationship("CourseTeacher", back_populates="course")     
+    
+class Teacher(Base):
+    __tablename__ = 'teacher'
+
+    teacherid = Column(Integer, primary_key=True, index=True)
+    firstname = Column(String, index=True,nullable=False)
+    lastname = Column(String, index=True,nullable=False)
+    username = Column(String, index=True,nullable=False,unique=True)
+
+    hashedpassword = Column(String, index=True,nullable=False)
+    course = relationship("CourseTeacher", back_populates="teacher")     
+    
+class CourseTeacher(Base):
+    __tablename__ = 'courseteacher'
+
+    courseid = Column(Integer, ForeignKey('course.courseid'), primary_key=True)
+    teacherid = Column(Integer, ForeignKey('teacher.teacherid'), primary_key=True)
+
+    course = relationship("Course", back_populates="teacher")
+    teacher= relationship("Teacher", back_populates="course")
+
+     

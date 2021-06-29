@@ -20,7 +20,7 @@ class Item(ItemBase):
 
 
 class UserBase(BaseModel):
-    email: str
+    username: str
 
 
 class UserCreate(UserBase):
@@ -223,3 +223,22 @@ class context(BaseModel):
     test:str
     scoring:str
     mode:str    
+
+    
+class TeacherCreate(BaseModel):
+    firstname:str
+    lastname:str
+    password:str
+    username:str
+
+
+
+
+class CourseTeacherCreate(BaseModel):
+    coursename:str
+    coursedescription:str
+    courseobjective:str
+    teacherid:int
+      
+class Token(BaseModel):
+    token:str
