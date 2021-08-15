@@ -1,3 +1,4 @@
+python-jose[cryptography]
 click
 cx-Oracle  # to be removed
 fastapi
@@ -9,3 +10,5 @@ sentry-sdk
 numpy
 httpx
 jose
+bcrypt
+

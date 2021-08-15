@@ -154,3 +154,5 @@ Thumbs.db
 .idea/
 
 # End of https://www.toptal.com/developers/gitignore/api/python
+*.pyc
+*.pyc
