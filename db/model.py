@@ -4,6 +4,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import BigInteger, DateTime
 from .database import Base
 
+from datetime import datetime
+
 # class User(Base):
 #     __tablename__ = "users"
 
@@ -119,9 +121,12 @@ class Course(Base):
     __tablename__ = "course"
 
     courseid = Column(Integer, primary_key=True, index=True)
+    coursecode = Column(String, index=True, nullable=False)
     coursename = Column(String, index=True, nullable=False)
     coursedescription = Column(String, index=True, nullable=False)
     courseobjective = Column(String, index=True, nullable=False)
+    imagesrc = Column(String, index=True, nullable=False)
+
     teacher = relationship("CourseTeacher", back_populates="course")
 
 
@@ -154,6 +159,54 @@ class Student(Base):
     firstname = Column(String, index=True, nullable=False)
     lastname = Column(String, index=True, nullable=False)
     username = Column(String, index=True, nullable=False, unique=True)
+    avatar = Column(String, index=True, nullable=False)
 
     hashedpassword = Column(String, index=True, nullable=False)
     # course = relationship("CourseTeacher", back_populates="teacher")
+
+
+class StudentAssignment(Base):
+    __tablename__ = "studentassignment"
+
+    studentassigmentid = Column(Integer, primary_key=True, index=True)
+
+    assignmentid = Column(Integer, ForeignKey("assignment.assignmentid"))
+    # courseid= Column(Integer, ForeignKey("course.courseid")
+
+    totalscore = Column(Integer, index=True, nullable=False)
+    totalcorrect = Column(Integer, index=True, nullable=False)
+    totalnotcorrect = Column(Integer, index=True, nullable=False)
+    studentid = Column(Integer, ForeignKey("student.studentid"))
+
+    created_at = Column(DateTime, default=datetime.now)
+    update_at = Column(
+        DateTime,
+        default=datetime.now,
+        onupdate=datetime.now,
+    )
+
+
+class StudentAssignmentQuestion(Base):
+    __tablename__ = "studentassignmentquestion"
+
+    studentassignmentquestionid = Column(Integer, primary_key=True, index=True)
+    questionnumber = Column(Integer, index=True, nullable=False)
+
+    studentscore = Column(Integer, index=True, nullable=False)
+    testresult = Column(String, index=True, nullable=False)
+    studentanswer = Column(String, index=True, nullable=False)
+    totalcorrect = Column(Integer, index=True, nullable=False)
+    totalnotcorrect = Column(Integer, index=True, nullable=False)
+
+    createdat = Column(DateTime, default=datetime.now)
+
+    studentassigmentid = Column(
+        Integer, ForeignKey("studentassignment.studentassigmentid")
+    )
+
+
+class StudentEnrollCourse(Base):
+    __tablename__ = "studentenrollcourse"
+
+    studentid = Column(Integer, ForeignKey("student.studentid"), primary_key=True)
+    courseid = Column(Integer, ForeignKey("course.courseid"), primary_key=True)

@@ -216,10 +216,12 @@ class TeacherCreate(BaseModel):
 
 
 class CourseTeacherCreate(BaseModel):
+    coursecode: str
     coursename: str
     coursedescription: str
     courseobjective: str
     teacherid: int
+    imagesrc: str
 
 
 class Token(BaseModel):
@@ -231,3 +233,8 @@ class StudentCreate(BaseModel):
     lastname: str
     password: str
     username: str
+    avatar: str
+
+
+class test(BaseModel):
+    bl: int

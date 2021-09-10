@@ -1,4 +1,6 @@
+from calendar import c
 import json
+from fastapi.param_functions import Body
 import httpx
 from datetime import datetime, timedelta
 from typing import List
@@ -308,6 +310,22 @@ def create_course_teacher(
     )
 
 
+@app.get("/{teacherid}/getallcourseteacher")
+def get_all_course_teacher(teacherid: int, db: Session = Depends(get_db)):
+
+    # teacherid need to change for use token to find teacherid
+
+    return classroomcrud.get_all_course_teacher(db, teacherid)
+
+
+@app.get("/{studentid}/getallcoursestudent")
+def get_all_course_student(studentid: int, db: Session = Depends(get_db)):
+
+    # teacherid need to change for use token to find teacherid
+
+    return classroomcrud.get_all_course_student(db, studentid)
+
+
 @app.post("/createstudent")
 def create_student(student: schemas.StudentCreate, db: Session = Depends(get_db)):
 
@@ -448,3 +466,128 @@ def authen_student2(token: schemas.Token, db: Session = Depends(get_db)):
     student = authen_student(token, db)
 
     return student
+
+
+@app.post("/testroute")
+def test_route(bl: int = None, ads: int = Body(None), db: Session = Depends(get_db)):
+
+    return bl
+
+
+@app.post("/studentassignment")
+def write_studentassignment(
+    assignmentid: int = Body(...),
+    totalscore: int = Body(...),
+    studentid: int = Body(...),
+    totalcorrect: int = Body(...),
+    totalnotcorrect: int = Body(...),
+    db: Session = Depends(get_db),
+):
+
+    return classroomcrud.create_student_assignment(
+        db,
+        assignmentid,
+        totalscore,
+        studentid,
+        totalcorrect,
+        totalnotcorrect,
+    )
+
+
+@app.get("/{studentid}/studentassignment")
+def get_studentassignment(
+    studentid: int,
+    db: Session = Depends(get_db),
+):
+
+    return classroomcrud.read_student_assignment(db, studentid)
+
+
+@app.get("/{studentid}/studentassignmentquestion")
+def read_studentassignment_question(
+    studentid: int,
+    studentassignmentid: int,
+    db: Session = Depends(get_db),
+):
+
+    return classroomcrud.read_student_assignment_question_by_id_studentassignmentid(
+        db, studentid, studentassignmentid
+    )
+
+
+@app.get("/{studentid}/attempt/")
+def get_studentassignment(
+    studentid: int,
+    assignmentid: int,
+    db: Session = Depends(get_db),
+):
+
+    return classroomcrud.count_attempt(db, studentid, assignmentid)
+
+
+@app.post("/studentassignmentquestion")
+def write_studentassignmentquestion(
+    questionnumber: int = Body(...),
+    studentscore: int = Body(...),
+    testresult: str = Body(...),
+    studentanswer: str = Body(...),
+    totalcorrect: int = Body(...),
+    totalnotcorrect: int = Body(...),
+    studentassignmentid: int = Body(...),
+    db: Session = Depends(get_db),
+):
+    classroomcrud.create_student_assignmentquestion(
+        db,
+        studentassignmentid,
+        questionnumber,
+        studentscore,
+        testresult,
+        studentanswer,
+        totalcorrect,
+        totalnotcorrect,
+    )
+
+    return 0
+
+
+@app.put("/studentassignment")
+def update_studentassignment(
+    studentassignmentid: int = Body(...),
+    totalscore: int = Body(...),
+    totalcorrect: int = Body(...),
+    totalnotcorrect: int = Body(...),
+    db: Session = Depends(get_db),
+):
+    classroomcrud.update_student_assignment(
+        db, studentassignmentid, totalscore, totalcorrect, totalnotcorrect
+    )
+
+    return 0
+
+
+@app.get("/{courseid}/studentnotinthiscourse")
+def read_studentnotinthiscourse(
+    courseid: int,
+    db: Session = Depends(get_db),
+):
+
+    return classroomcrud.read_students_notin_this_course(db, courseid)
+
+
+@app.get("/{courseid}/course")
+def read_course(
+    courseid: int,
+    db: Session = Depends(get_db),
+):
+
+    return classroomcrud.read_course(db, courseid)
+
+
+@app.post("/studentenrollcourse")
+def write_student_enroll_course(
+    studentid: int = Body(...),
+    courseid: int = Body(...),
+    db: Session = Depends(get_db),
+):
+
+    return classroomcrud.create_student_enroll_course(db, studentid, courseid)
