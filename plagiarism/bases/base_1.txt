@@ -1,0 +1,3 @@
+# Instruction-0: Write a star of yours to the output
+# Instruction-1: Write a square of yours to the output
+# Instruction-2: Write a string "ending program" to the output and end the program
