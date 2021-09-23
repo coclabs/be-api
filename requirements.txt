@@ -11,4 +11,6 @@ numpy
 httpx
 jose
 bcrypt
+mosspy
+bs4
 
