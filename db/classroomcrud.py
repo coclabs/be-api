@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from passlib.hash import bcrypt
+from sqlalchemy.sql.functions import mode
 from . import model
 from . import schemas
 import math
@@ -49,6 +50,76 @@ def create_student_enroll_course(db: Session, studentid: int, courseid: int):
     db.commit()
     db.refresh(db_studentenrollcourse)
     return db_studentenrollcourse
+
+
+def create_course_assignment(db: Session, assignmentid: int, courseid: int):
+    db_course_assignment = model.CourseAssignment(
+        assignmentid=assignmentid, courseid=courseid
+    )
+    db.add(db_course_assignment)
+    db.commit()
+    db.refresh(db_course_assignment)
+    return db_course_assignment
+
+
+def read_course_assignment(db: Session, courseid: int):
+    return (
+        db.query(model.Assignment)
+        .join(model.CourseAssignment)
+        .filter(model.CourseAssignment.courseid == courseid)
+        .filter(model.CourseAssignment.status == True)
+        .all()
+    )
+
+
+def read_course_assignment_by_id(db: Session, courseid: int, assignmentid: int):
+    return (
+        db.query(model.CourseAssignment)
+        .join(model.Assignment)
+        .filter(
+            model.CourseAssignment.courseid == courseid,
+            model.CourseAssignment.assignmentid == assignmentid,
+        )
+        .first()
+    )
+
+
+def read_course_assignment_status(db: Session, assignmentid, courseid: int):
+    return (
+        db.query(model.CourseAssignment.status)
+        .filter(
+            model.CourseAssignment.courseid == courseid,
+            model.CourseAssignment.assignmentid == assignmentid,
+            model.CourseAssignment.status == True,
+        )
+        .first()
+    )
+
+
+def toggle_course_assignment(db: Session, courseid: int, assignmentid):
+
+    status = (
+        db.query(model.CourseAssignment.status)
+        .filter(
+            model.CourseAssignment.courseid == courseid,
+            model.CourseAssignment.assignmentid == assignmentid,
+        )
+        .first()
+    )
+
+    if status[0] is True:
+        x = False
+    else:
+        x = True
+
+    print(x)
+
+    db.query(model.CourseAssignment).filter(
+        model.CourseAssignment.courseid == courseid,
+        model.CourseAssignment.assignmentid == assignmentid,
+    ).update({"status": (x)})
+    db.commit()
+    return 0
 
 
 def read_students_notin_this_course(db: Session, courseid: int):

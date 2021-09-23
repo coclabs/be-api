@@ -210,3 +210,28 @@ class StudentEnrollCourse(Base):
 
     studentid = Column(Integer, ForeignKey("student.studentid"), primary_key=True)
     courseid = Column(Integer, ForeignKey("course.courseid"), primary_key=True)
+    created_at = Column(DateTime, default=datetime.now)
+
+
+class CourseAssignment(Base):
+    __tablename__ = "courseassignment"
+
+    assignmentid = Column(
+        Integer, ForeignKey("assignment.assignmentid"), primary_key=True
+    )
+    courseid = Column(Integer, ForeignKey("course.courseid"), primary_key=True)
+    status = Column(Boolean, index=True, default=True)
+
+
+class StudentAssignmentRecord(Base):
+    __tablename__ = "studentassignmentrecord"
+    studentassignmentrecordid = Column(Integer, primary_key=True, index=True)
+
+    assignmentid = Column(Integer, ForeignKey("assignment.assignmentid"))
+    max = Column(Integer, index=True, nullable=False)
+    min = Column(Integer, index=True, nullable=False)
+    allscore = Column(Integer, index=True, nullable=False)
+    attempt = Column(Integer, index=True, nullable=False)
+    firstdonetime = Column(DateTime, index=True, nullable=False)
+    lastdonetime = Column(DateTime, index=True, nullable=False)
+    # mean = allscore/attempt

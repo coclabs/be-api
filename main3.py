@@ -38,7 +38,7 @@ def get_db():
 # def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 #     db_user = crud.get_user_by_email(db, email=user.email)
 #     if db_user:
-#         raise HTTPException(status_code=400, detail="Email already registered")
+#         raise HTTPException(us_code=400, detail="Email already registered")
 #     return crud.create_user(db=db, user=user)
 
 
@@ -591,3 +591,118 @@ def write_student_enroll_course(
 ):
 
     return classroomcrud.create_student_enroll_course(db, studentid, courseid)
+
+
+@app.post("/create_course_assignment")
+def write_course_assignment(
+    assignmentid: int = Body(...),
+    courseid: int = Body(...),
+    db: Session = Depends(get_db),
+):
+
+    return classroomcrud.create_course_assignment(db, assignmentid, courseid)
+
+
+@app.get("/{courseid}/read_course_assignment")
+def read_course_assignment(
+    courseid: int,
+    db: Session = Depends(get_db),
+):
+
+    return classroomcrud.read_course_assignment(db, courseid)
+
+
+@app.get("/{courseid}/read_course_assignment_status")
+def read_course_assignment_status(
+    page: int,
+    courseid: int,
+    db: Session = Depends(get_db),
+):
+
+    assignment = codingcrud.get_assignments_assignmentid(db, page)
+
+    result = []
+
+    for ass in jsonable_encoder(assignment):
+
+        if (
+            classroomcrud.read_course_assignment_status(
+                db, ass["assignmentid"], courseid
+            )
+            is not None
+        ):
+            result.append(True)
+        else:
+            result.append(False)
+
+    return result
+
+
+@app.post("/toggle_course_assignment")
+def read_course_assignment(
+    courseid: int = Body(...),
+    assignmentid: int = Body(...),
+    db: Session = Depends(get_db),
+):
+
+    if classroomcrud.read_course_assignment_by_id(db, courseid, assignmentid) is None:
+        return classroomcrud.create_course_assignment(db, assignmentid, courseid)
+
+    else:
+        return classroomcrud.toggle_course_assignment(db, courseid, assignmentid)
+
+
+@app.post("/write_assignment_record")
+def write_assignment_record(
+    assignmentid: int = Body(...),
+    studentscore: int = Body(...),
+    db: Session = Depends(get_db),
+):
+    record = classroomcrud.read_student_assignment_record_by_assignmentid(
+        db, assignmentid
+    )
+
+    if record is None:
+        max = studentscore
+        min = studentscore
+        allscore = studentscore
+        attempt = 1
+
+        return classroomcrud.create_studentassignmentrecord(
+            db, assignmentid, max, min, allscore, attempt
+        )
+    else:
+        if studentscore >= record.max:
+            max = studentscore
+        else:
+            max = record.max
+        if studentscore <= record.min:
+            min = studentscore
+        else:
+            min = record.min
+
+        allscore = record.allscore + studentscore
+        attempt = record.attempt + 1
+
+        classroomcrud.update_student_assignment_record(
+            db, assignmentid, max, min, allscore, attempt
+        )
+
+        return record.studentassignmentrecordid
+
+
+#  assignmentid = Column(
+#         Integer, ForeignKey("assignment.assignmentid"), primary_key=True
+#     )
+#     max = Column(Integer, index=True, nullable=False)
+#     min = Column(Integer, index=True, nullable=False)
+#     allscore = Column(Integer, index=True, nullable=False)
+#     attempt = Column(Integer, index=True, nullable=False)
+#     firstdonetime = Column(DateTime, index=True, nullable=False)
+#     lastdonetime = Column(DateTime, index=True, nullable=False)
+
+
+@app.get("/read_all_student_assignment_record")
+def read_all_student_assignment_record(db: Session = Depends(get_db)):
+
+    return classroomcrud.read_all_student_assignment_record(db)
