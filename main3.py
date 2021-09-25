@@ -706,3 +706,31 @@ def write_assignment_record(
 def read_all_student_assignment_record(db: Session = Depends(get_db)):
 
     return classroomcrud.read_all_student_assignment_record(db)
+
+
+@app.get("/{courseid}/read_student_in_course")
+def read_all_student_in_course(courseid: int, db: Session = Depends(get_db)):
+
+    return classroomcrud.read_all_student_in_course(db, courseid)
+
+
+@app.get("/read_record_student")
+def read_all_student_in_course(assignmentid: int, db: Session = Depends(get_db)):
+
+    result = []
+    studentid = classroomcrud.read_record_student(db, assignmentid)
+
+    for a in studentid:
+        if a not in result:
+
+            result.append(a.studentid)
+    my_list = list(set(result))
+
+    student = []
+
+    for i in my_list:
+        std = classroomcrud.read_student(db, i)
+
+        student.append(std)
+
+    return student

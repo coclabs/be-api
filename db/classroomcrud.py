@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Session
 from passlib.hash import bcrypt
-from sqlalchemy.sql.functions import mode
 from . import model
 from . import schemas
 import math
@@ -8,6 +7,8 @@ import time
 import datetime
 from sqlalchemy import delete
 from sqlalchemy import desc
+
+from datetime import datetime
 
 
 def get_all_course_teacher(db: Session, teacherid: int):
@@ -285,3 +286,95 @@ def update_student_assignment(
     ).update({"totalnotcorrect": (totalnotcorrect)})
 
     db.commit()
+
+
+def create_studentassignmentrecord(
+    db: Session,
+    assignmentid: int,
+    max: int,
+    min: int,
+    allscore: int,
+    attempt: int,
+):
+
+    db_student_assignment_record = model.StudentAssignmentRecord(
+        assignmentid=assignmentid,
+        max=max,
+        min=min,
+        allscore=allscore,
+        attempt=attempt,
+        firstdonetime=datetime.now(),
+        lastdonetime=datetime.now(),
+    )
+    db.add(db_student_assignment_record)
+    db.commit()
+    db.refresh(db_student_assignment_record)
+    return db_student_assignment_record
+
+
+def read_student_assignment_record_by_assignmentid(db: Session, assignmentid: int):
+    return (
+        db.query(model.StudentAssignmentRecord)
+        .filter(model.StudentAssignmentRecord.assignmentid == assignmentid)
+        .first()
+    )
+
+
+def read_all_student_assignment_record(db: Session):
+    return db.query(model.StudentAssignmentRecord).all()
+
+
+def update_student_assignment_record(
+    db: Session,
+    assignmentid: int,
+    max: int,
+    min: int,
+    allscore: int,
+    attempt: int,
+):
+    db.query(model.StudentAssignmentRecord).filter(
+        model.StudentAssignmentRecord.assignmentid == assignmentid
+    ).update({"max": (max)})
+
+    db.query(model.StudentAssignmentRecord).filter(
+        model.StudentAssignmentRecord.assignmentid == assignmentid
+    ).update({"min": (min)})
+
+    db.query(model.StudentAssignmentRecord).filter(
+        model.StudentAssignmentRecord.assignmentid == assignmentid
+    ).update({"allscore": (allscore)})
+
+    db.query(model.StudentAssignmentRecord).filter(
+        model.StudentAssignmentRecord.assignmentid == assignmentid
+    ).update({"attempt": (attempt)})
+
+    db.query(model.StudentAssignmentRecord).filter(
+        model.StudentAssignmentRecord.assignmentid == assignmentid
+    ).update({"lastdonetime": (datetime.now())})
+
+    db.commit()
+
+
+def read_all_student_in_course(db: Session, courseid: int):
+
+    return (
+        db.query(model.Student)
+        .join(
+            model.StudentEnrollCourse,
+            model.Student.studentid == model.StudentEnrollCourse.studentid,
+        )
+        .filter(model.StudentEnrollCourse.courseid == courseid)
+        .all()
+    )
+
+
+def read_record_student(db: Session, assignmentid: int):
+    return (
+        db.query(model.StudentAssignment.studentid)
+        .filter(model.StudentAssignment.assignmentid == assignmentid)
+        .all()
+    )
+
+
+def read_student(db: Session, studentid: int):
+    return db.query(model.Student).filter(model.Student.studentid == studentid).first()
