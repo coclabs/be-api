@@ -363,7 +363,7 @@ def login_for_access_token_teacher(
     teacher = authenticatecrud.authenticate_teacher(db, user.username, user.password)
     if not teacher:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=401,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
@@ -386,7 +386,7 @@ def login_for_access_token_student(
     student = authenticatecrud.authenticate_student(db, user.username, user.password)
     if not student:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=401,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
@@ -414,7 +414,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 def authen_teacher(token: schemas.Token, db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
-        status_code="status.HTTP_401_UNAUTHORIZED",
+        status_code=401,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
@@ -434,7 +434,7 @@ def authen_teacher(token: schemas.Token, db: Session = Depends(get_db)):
 
 def authen_student(token: schemas.Token, db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
-        status_code="status.HTTP_401_UNAUTHORIZED",
+        status_code=401,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )

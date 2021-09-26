@@ -1,6 +1,5 @@
 import os
 import logging
-import soup_transformer
 
 from threading import Thread
 from bs4 import BeautifulSoup
@@ -12,10 +11,23 @@ except ImportError:
 
 
 class MossResult:
-    __slots__ = 'files',
+    __slots__ = 'url', '_files',
 
-    def __init__(self):
-        self.files = {}
+    def __init__(self, url):
+        self.url = url
+        self._files = {}
+
+    @property
+    def result(self):
+        return self._files
+
+    @result.setter
+    def result(self, new_result):
+        self._files = new_result
+
+    @result.deleter
+    def result(self):
+        self._files = {}
 
     def process_url(self, url, urls, base_url, on_read):
         # logging.debug("Processing URL: " + url)
@@ -55,19 +67,19 @@ class MossResult:
                 if link not in urls:
                     urls.append(link)
 
-        self.files[file_name] = soup.encode(soup.original_encoding)
+        self._files[file_name] = soup.encode(soup.original_encoding)
         # f = open(os.path.join(path, file_name), 'wb')
         # f.write(soup.encode(soup.original_encoding))
         # f.close()
 
-    def generate(self, url, connections=4, log_level=logging.DEBUG, on_read=lambda url: None):
+    def generate(self, connections=4, log_level=logging.DEBUG, on_read=lambda url: None):
         logging.basicConfig(level=log_level)
 
-        if not url:
+        if not self.url:
             raise Exception('Empty url supplied')
 
-        base_url = url + '/'
-        urls = [url]
+        base_url = self.url + '/'
+        urls = [self.url]
         threads = []
 
         # logging.debug("=" * 80)
@@ -90,4 +102,5 @@ class MossResult:
         for thread in threads:
             thread.join()
 
+        return self._files
 

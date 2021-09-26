@@ -1,17 +1,13 @@
 import bs4
 
+from enum import Enum
+
 _markup_parser = 'lxml'
 report_root = 'report_w.html'
 
 
-class MossTransformer:
-
-    def __init__(self, files, markup_parser='lxml'):
-        self.markup_parser = markup_parser
-        self.files = files
-        self.records = []
-        self.result = {}
-
+class MossTransform(Enum):
+    @staticmethod
     def transform_index(self):
         index_html = self.files.get('index.html')
         document = bs4.BeautifulSoup(index_html, _markup_parser)
@@ -47,7 +43,8 @@ class MossTransformer:
             self.records.append(_row)
         self.result['index_records'] = self.records
 
-    def transform_record(self):
+    @staticmethod
+    def transform_records(self):
         for record in self.records:
             with open(f'{report_root}\\{"-top.".join(record["source"].split(".", maxsplit=1))}') as match_file:
                 document = bs4.BeautifulSoup(match_file, _markup_parser)
@@ -80,3 +77,16 @@ class MossTransformer:
 
             self.result['source'] = record['source']
             self.result['length'] = record['length']
+
+
+class MossTransformer:
+
+    def __init__(self, files, markup_parser='lxml'):
+        self.markup_parser = markup_parser
+        self.files = files
+        self.records = []
+        self.result = {}
+
+    def transform(self, callback=MossTransform.transform_index, *args, **kwargs):
+        callback(self, *args, **kwargs)
+        return self.result
