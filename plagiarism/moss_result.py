@@ -72,7 +72,7 @@ class MossResult:
         # f.write(soup.encode(soup.original_encoding))
         # f.close()
 
-    def generate(self, connections=4, log_level=logging.DEBUG, on_read=lambda url: None):
+    def generate(self, connections=16, log_level=logging.DEBUG, on_read=lambda url: None):
         logging.basicConfig(level=log_level)
 
         if not self.url:

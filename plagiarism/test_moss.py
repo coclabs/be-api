@@ -22,16 +22,20 @@ if __name__ == '__main__':
 
         _moss = Moss(user_id=_id, language='python')
         _moss.set_comment_string('test commentXYZ')
-        _moss.set_ignore_limit()
+        _moss.set_ignore_limit(1000000)
+        _moss.set_experimental_server(1)
         _moss.add_base_content(base_0.read())
         _moss.add_base_content(base_1.read())
         _moss.add_content(sample_0.read())
         _moss.add_content(sample_1.read())
 
-        report_url = _moss.send(report_callback)
-        print(report_url)
+        # Standford Moss is currently not stable, tcp message will not be send
+        # report_url = _moss.send(report_callback)
+        # print('report:', report_url)
 
-        _moss_result = MossResult(report_url)
+        # _moss_result = MossResult(report_url)
+        # Stanford Moss is currently not stable, previous result will be used for demo instead
+        _moss_result = MossResult('http://moss.stanford.edu/results/0/8627166986438/')
         _moss_generated = _moss_result.generate()
 
         print('*' * 50)
@@ -40,10 +44,27 @@ if __name__ == '__main__':
             print(key, value)
 
         _moss_transformer = MossTransformer(files=_moss_generated)
-        _final_result = {
-            'index': _moss_transformer.transform(MossTransform.transform_index),
-        }
-        print(_final_result)
+        transformed_index = _moss_transformer.transform(('index.html',))
+        record_0 = transformed_index[0]
+        transformed_record_0 = _moss_transformer.transform(
+            files=(
+                ('-top.'.join(record_0['source'].split('.', maxsplit=1))),
+                record_0['file1']['source'],
+                record_0['file2']['source']
+            ),
+            transformer=MossTransform.transform_record,
+            match_meta=record_0,
+        )
+
+        import json
+        with open('output.log', 'wt') as file:
+            file.write('=====Parsed index=====\n')
+            file.write(json.dumps(transformed_index, indent=4)+'\n'*2)
+            file.write('=====Parsed record=====\n')
+            file.write(json.dumps(transformed_record_0, indent=4))
+            print('wrote output to output.log')
+            # print(transformed_index)
+            # print(transformed_record_0)
 
     # Save report file
     # _moss.saveWebPage(report_url, "report.html")

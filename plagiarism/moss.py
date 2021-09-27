@@ -91,10 +91,6 @@ class Moss:
         for content in contents:
             self.add_content(content.get('content'), content.get('name'))
 
-    def addFilesByWildcard(self, wildcard):
-        for file in glob.glob(wildcard, recursive=True):
-            self.files.append((file, None))
-
     def get_languages(self):
         return self.languages
 
@@ -105,10 +101,7 @@ class Moss:
         content_size = len(content_encoded)
         message = f'file {file_id} {self.options["language"]} {content_size} {display_name}\n'
         s.send(message.encode())
-        # print('Sending ', message.encode())
         s.send(content_encoded)
-        # print('Content', content_encoded)
-        # on_send(content, display_name)
 
     def send(self, on_send=lambda file_path, display_name: None):
         with closing(socket.socket()) as session:

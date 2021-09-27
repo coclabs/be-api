@@ -32,14 +32,15 @@ if __name__ == '__main__':
 
 
     _moss = Moss(user_id=_id, language='python')
-    # _moss.addBaseFile('base_0.txt')
-    # _moss.addBaseFile('base_1.txt')
+    _moss.addBaseFile('base_0.txt')
+    _moss.addBaseFile('base_1.txt')
     _moss.addFilesByWildcard('sample_*.py')
 
-    report_url = _moss.send(report_callback)
-    print(report_url)
+    # report_url = _moss.send(report_callback)
+    # print(report_url)
 
     # Save report file
+    report_url = 'http://moss.stanford.edu/results/0/8627166986438/'
     _moss.saveWebPage(report_url, "report.html")
-    mosspy.download_report(report_url, "report_w.html", connections=8, log_level=10,
+    mosspy.download_report(report_url, "report_w.html", connections=16, log_level=10,
                            on_read=lambda url: print('*', end='', flush=True))
