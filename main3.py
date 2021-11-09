@@ -5,16 +5,104 @@ import httpx
 from datetime import datetime, timedelta
 from typing import List
 from typing import Optional
+
+from pydantic.networks import HttpUrl
 from db import codingcrud, schemas, database, model, classroomcrud, authenticatecrud
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, defaultload
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
 from jose import JWTError, jwt
+from collections import defaultdict
+from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import Cookie, Depends, FastAPI, Query, WebSocket, status
+
 
 model.Base.metadata.create_all(bind=database.engine)
 app = FastAPI()
+allstudent = {}
+allteacher = {}
+html1 = """
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Chat</title>
+    </head>
+    <body>
+        <h1>WebSocket Chat</h1>
+        <form action="" onsubmit="sendMessage(event)">
+            <label>Item ID: <input type="text" id="itemId" autocomplete="off" value="foo"/></label>
+            <label>Token: <input type="text" id="token" autocomplete="off" value="some-key-token"/></label>
+            <button onclick="connect(event)">Connect</button>
+            <hr>
+            <label>Message: <input type="text" id="messageText" autocomplete="off"/></label>
+            <button>Send</button>
+        </form>
+        <ul id='messages'>
+        </ul>
+        <script>
+        var ws = null;
+            function connect(event) {
+                var itemId = document.getElementById("itemId")
+                var token = document.getElementById("token")
+                ws = new WebSocket("ws://localhost:8000/items/" + itemId.value + "/ws?token=" + token.value);
+                ws.onmessage = function(event) {
+                    var messages = document.getElementById('messages')
+                    var message = document.createElement('li')
+                    var content = document.createTextNode(event.data)
+                    message.appendChild(content)
+                    messages.appendChild(message)
+                };
+                event.preventDefault()
+            }
+            function sendMessage(event) {
+                var input = document.getElementById("messageText")
+                ws.send(input.value)
+                input.value = ''
+                event.preventDefault()
+            }
+        </script>
+    </body>
+</html>
+"""
 
+html2 = """
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Chat</title>
+    </head>
+    <body>
+        <h1>WebSocket Chat</h1>
+        <h2>Your ID: <span id="ws-id"></span></h2>
+        <form action="" onsubmit="sendMessage(event)">
+            <input type="text" id="messageText" autocomplete="off"/>
+            <button>Send</button>
+        </form>
+        <ul id='messages'>
+        </ul>
+        <script>
+            var client_id = Date.now()
+            document.querySelector("#ws-id").textContent = client_id;
+            var ws = new WebSocket(`ws://localhost:8000/ws/${client_id}`);
+            ws.onmessage = function(event) {
+                var messages = document.getElementById('messages')
+                var message = document.createElement('li')
+                var content = document.createTextNode(event.data)
+                message.appendChild(content)
+                messages.appendChild(message)
+            };
+            function sendMessage(event) {
+                var input = document.getElementById("messageText")
+                ws.send(input.value)
+                input.value = ''
+                event.preventDefault()
+            }
+        </script>
+    </body>
+</html>
+"""
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,6 +113,34 @@ app.add_middleware(
 )
 
 
+class ConnectionManager:
+    def __init__(self):
+
+        self.active_connections: dict = defaultdict(dict)
+
+    async def connect(self, websocket: WebSocket, courseid: int):
+        await websocket.accept()
+        if (
+            self.active_connections[courseid] == {}
+            or len(self.active_connections[courseid]) == 0
+        ):
+            self.active_connections[courseid] = []
+        self.active_connections[courseid].append(websocket)
+
+    def disconnect(self, websocket: WebSocket, courseid: int):
+        self.active_connections[courseid].remove(websocket)
+
+    async def send_personal_message(self, json, websocket: WebSocket):
+        await websocket.send_json(json, "text")
+
+    async def broadcast(self, json, courseid: int):
+        for connection in self.active_connections[courseid]:
+            await connection.send_json(json, "text")
+
+
+manager = ConnectionManager()
+
+
 # Dependency
 def get_db():
     db = database.SessionLocal()
@@ -32,6 +148,192 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Message text was: {data}")
+
+
+async def get_cookie_or_token(
+    websocket: WebSocket,
+    session: Optional[str] = Cookie(None),
+    token: Optional[str] = Query(None),
+):
+    if session is None and token is None:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+    return session or token
+
+
+@app.websocket("/ws/{courseid}/{client_id}")
+async def websocket_endpoint(
+    websocket: WebSocket,
+    client_id: int,
+    role: str,
+    courseid: int,
+    db: Session = Depends(get_db),
+):
+
+    await manager.connect(websocket, courseid)
+
+    teacher = ""
+    student = ""
+
+    if role == "Teacher":
+
+        teacher = authenticatecrud.get_teacher_by_id(db, client_id)
+        if courseid not in allteacher.keys():
+            allteacher[courseid] = []
+
+        # if client_id not in allteacher[courseid]:
+
+        # await manager.broadcast(
+        #     {"message": f"{role} {teacher.firstname}  join chat", "id": 3},
+        #     courseid,
+        # )
+
+        allteacher[courseid].append(client_id)
+
+        listteacher = []
+        for teacher in allteacher[courseid]:
+
+            oneteacher = authenticatecrud.get_teacher_by_id(db, teacher)
+            listteacher.append(jsonable_encoder(oneteacher))
+        await manager.broadcast({"message": listteacher, "id": 1}, courseid)
+        if allstudent == {}:
+            await manager.broadcast({"message": [], "id": 2}, courseid)
+        else:
+            if courseid in allstudent.keys():
+                liststudent = []
+                for student in allstudent[courseid]:
+
+                    onestudent = authenticatecrud.get_student_by_id(db, student)
+                    liststudent.append(jsonable_encoder(onestudent))
+
+                await manager.broadcast(
+                    {"message": liststudent, "id": 2},
+                    courseid,
+                )
+            else:
+                await manager.broadcast({"message": [], "id": 2}, courseid)
+
+    else:
+        if allteacher == {}:
+            await manager.broadcast({"message": [], "id": 1}, courseid)
+        else:
+            listteacher = []
+            if courseid in allteacher.keys():
+                for teacher in allteacher[courseid]:
+
+                    oneteacher = authenticatecrud.get_teacher_by_id(db, teacher)
+                    listteacher.append(jsonable_encoder(oneteacher))
+                await manager.broadcast(
+                    {"message": listteacher, "id": 1},
+                    courseid,
+                )
+            else:
+                await manager.broadcast({"message": [], "id": 1}, courseid)
+
+        student = authenticatecrud.get_student_by_id(db, client_id)
+        if courseid not in allstudent.keys():
+            allstudent[courseid] = []
+
+        allstudent[courseid].append(client_id)
+        liststudent = []
+        if courseid in allstudent.keys():
+            for student in allstudent[courseid]:
+
+                onestudent = authenticatecrud.get_student_by_id(db, student)
+                liststudent.append(jsonable_encoder(onestudent))
+        await manager.broadcast({"message": liststudent, "id": 2}, courseid)
+
+    try:
+        while True:
+            data = await websocket.receive_text()
+            if role == "Teacher":
+                teacher = authenticatecrud.get_teacher_by_id(db, client_id)
+                await manager.broadcast(
+                    {
+                        "message": f"{role} {teacher.firstname} \n says: {data} ",
+                        "id": 5,
+                    },
+                    courseid,
+                )
+            else:
+                student = authenticatecrud.get_student_by_id(db, client_id)
+                await manager.broadcast(
+                    {
+                        "message": f"{role} {student.firstname} \n says: {data} ",
+                        "id": 6,
+                    },
+                    courseid,
+                )
+
+            # await manager.send_personal_message(f"You wrote: {data}", websocket)
+
+    except WebSocketDisconnect:
+
+        manager.disconnect(websocket, courseid)
+
+        if role == "Teacher":
+            listteacher = []
+
+            allteacher[courseid].remove(client_id)
+            for teacher in allteacher[courseid]:
+
+                oneteacher = authenticatecrud.get_teacher_by_id(db, teacher)
+                listteacher.append(jsonable_encoder(oneteacher))
+            await manager.broadcast({"message": listteacher, "id": 100}, courseid)
+
+        else:
+            allstudent[courseid].remove(client_id)
+            for student in allstudent[courseid]:
+                liststudent = []
+
+                onestudent = authenticatecrud.get_student_by_id(db, student)
+                liststudent.append(jsonable_encoder(onestudent))
+            await manager.broadcast({"message": liststudent, "id": 200}, courseid)
+
+        #     student = authenticatecrud.get_student_by_id(db, client_id)
+        #     await manager.broadcast(
+        #         {"message": f"Student {student.firstname} left the chat", "id": 8},
+        #         courseid,
+        #     )
+        # await manager.broadcast(
+        #     {"message": f"Student in This room : {liststudent}", "id": 2},
+        #     courseid,
+        # )
+
+
+@app.websocket("/items/{item_id}/ws")
+async def websocket_endpoint(
+    websocket: WebSocket,
+    item_id: str,
+    q: Optional[int] = None,
+    cookie_or_token: str = Depends(get_cookie_or_token),
+):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(
+            f"Session cookie or query token value is: {cookie_or_token}"
+        )
+        if q is not None:
+            await websocket.send_text(f"Query parameter q is: {q}")
+        await websocket.send_text(f"Message text was: {data}, for item ID: {item_id}")
+
+
+@app.get("/")
+async def get():
+    return HTMLResponse(html2)
+
+
+# @app.get("/")
+# async def get():
+#     return HTMLResponse(html1)
 
 
 # @app.post("/users/", response_model=schemas.User)
@@ -363,7 +665,7 @@ def login_for_access_token_teacher(
     teacher = authenticatecrud.authenticate_teacher(db, user.username, user.password)
     if not teacher:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=401,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
@@ -386,7 +688,7 @@ def login_for_access_token_student(
     student = authenticatecrud.authenticate_student(db, user.username, user.password)
     if not student:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=401,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
