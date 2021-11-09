@@ -52,6 +52,7 @@ class Moss:
         }
         self.base_contents = []
         self.contents = []
+        self.report_url = None
 
         if language in self.languages:
             self.options['language'] = language
@@ -102,22 +103,24 @@ class Moss:
 
         content_encoded = content.encode('utf-8')
         content_size = len(content_encoded)
-        message = f'file {file_id} {self.options["l"]} {content_size} {display_name}\n'
+        message = f'file {file_id} {self.options["language"]} {content_size} {display_name}\n'
         s.send(message.encode())
+        # print('Sending ', message.encode())
         s.send(content_encoded)
-        on_send(content, display_name)
+        # print('Content', content_encoded)
+        # on_send(content, display_name)
 
     def send(self, on_send=lambda file_path, display_name: None):
         with closing(socket.socket()) as session:
             session.connect((self.server, self.port))
 
             session.send(f'moss {self.user_id}\n'.encode())
-            session.send(f'directory {self.options["d"]}\n'.encode())
-            session.send(f'X {self.options["x"]}\n'.encode())
-            session.send(f'maxmatches {self.options["m"]}\n'.encode())
-            session.send(f'show {self.options["n"]}\n'.encode())
+            session.send(f'directory {self.options["directory"]}\n'.encode())
+            session.send(f'X {self.options["experimental"]}\n'.encode())
+            session.send(f'maxmatches {self.options["matches"]}\n'.encode())
+            session.send(f'show {self.options["matching_files"]}\n'.encode())
 
-            session.send(f'language {self.options["l"]}\n'.encode())
+            session.send(f'language {self.options["language"]}\n'.encode())
             recv = session.recv(1024)
             if recv == 'no':
                 session.send(b'end\n')
@@ -126,16 +129,22 @@ class Moss:
             for base_content, display_name in self.base_contents:
                 self.upload_file(session, base_content, display_name, 0, on_send)
 
-            for index, (content, display_name) in enumerate(self.contents):
+            for index, (content, display_name) in enumerate(self.contents, start=1):
                 self.upload_file(session, content, display_name, index, on_send)
 
-            session.send(f'query 0 {self.options["c"]}\n'.encode())
+            session.send(f'query 0 {self.options["comment"]}\n'.encode())
 
             response = session.recv(1024)
 
             session.send(b'end\n')
+        report_url = response.decode().replace('\n', '')
+        self.report_url = report_url
+        return report_url
 
-        return response.decode().replace('\n', '')
+    def clean(self):
+        self.base_contents = []
+        self.contents = []
+        self.report_url = None
 
     def saveWebPage(self, url, path):
         if len(url) == 0:

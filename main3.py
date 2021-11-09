@@ -716,7 +716,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 def authen_teacher(token: schemas.Token, db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
-        status_code="status.HTTP_401_UNAUTHORIZED",
+        status_code=401,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
@@ -736,7 +736,7 @@ def authen_teacher(token: schemas.Token, db: Session = Depends(get_db)):
 
 def authen_student(token: schemas.Token, db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
-        status_code="status.HTTP_401_UNAUTHORIZED",
+        status_code=401,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )

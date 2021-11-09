@@ -31,9 +31,9 @@ if __name__ == '__main__':
         # print('*', end='', flush=True)
 
 
-    _moss = Moss(_id, 'python')
-    _moss.addBaseFile('base_0.txt')
-    _moss.addBaseFile('base_1.txt')
+    _moss = Moss(user_id=_id, language='python')
+    # _moss.addBaseFile('base_0.txt')
+    # _moss.addBaseFile('base_1.txt')
     _moss.addFilesByWildcard('sample_*.py')
 
     report_url = _moss.send(report_callback)
