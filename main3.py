@@ -873,7 +873,14 @@ def read_studentnotinthiscourse(
     db: Session = Depends(get_db),
 ):
 
-    return classroomcrud.read_students_notin_this_course(db, courseid)
+  allstu= classroomcrud.read_students_notin_this_course(db, courseid)
+  studentincourse=classroomcrud.read_all_student_in_course(db,courseid)
+  result=[]
+  for stu in allstu:
+      if(stu not in studentincourse): 
+          result.append(stu)
+  
+  return result
 
 
 @app.get("/{courseid}/course")
