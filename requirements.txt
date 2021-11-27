@@ -5,7 +5,7 @@ fastapi
 passlib
 psycopg2
 SQLAlchemy
-uvicorn
+uvicorn[standard]
 sentry-sdk
 numpy
 httpx
