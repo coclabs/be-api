@@ -37,5 +37,13 @@ def get_teacher_by_username(db: Session, username: str):
     return db.query(model.Teacher).filter(model.Teacher.username == username).first()
 
 
+def get_teacher_by_id(db: Session, id: int):
+    return db.query(model.Teacher).filter(model.Teacher.teacherid == id).first()
+
+
+def get_student_by_id(db: Session, id: int):
+    return db.query(model.Student).filter(model.Student.studentid == id).first()
+
+
 def get_student_by_username(db: Session, username: str):
     return db.query(model.Student).filter(model.Student.username == username).first()

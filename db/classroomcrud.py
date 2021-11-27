@@ -125,15 +125,7 @@ def toggle_course_assignment(db: Session, courseid: int, assignmentid):
 
 def read_students_notin_this_course(db: Session, courseid: int):
 
-    return (
-        db.query(model.Student)
-        .outerjoin(
-            model.StudentEnrollCourse,
-            model.Student.studentid == model.StudentEnrollCourse.studentid,
-        )
-        .filter(model.StudentEnrollCourse.courseid == None)
-        .all()
-    )
+    return db.query(model.Student).all()
 
 
 def read_course(db: Session, courseid: int):
