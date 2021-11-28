@@ -778,6 +778,7 @@ def test_route(bl: int = None, ads: int = Body(None), db: Session = Depends(get_
 
 @app.post("/studentassignment")
 def write_studentassignment(
+    courseid: int = Body(...),
     assignmentid: int = Body(...),
     totalscore: int = Body(...),
     studentid: int = Body(...),
@@ -788,6 +789,7 @@ def write_studentassignment(
 
     return classroomcrud.create_student_assignment(
         db,
+        courseid,
         assignmentid,
         totalscore,
         studentid,
@@ -796,13 +798,14 @@ def write_studentassignment(
     )
 
 
-@app.get("/{studentid}/studentassignment")
+@app.get("/{courseid}/{studentid}/studentassignment")
 def get_studentassignment(
+    courseid: int,
     studentid: int,
     db: Session = Depends(get_db),
 ):
 
-    return classroomcrud.read_student_assignment(db, studentid)
+    return classroomcrud.read_student_assignment(db, courseid, studentid)
 
 
 @app.get("/{studentid}/studentassignmentquestion")
@@ -854,6 +857,7 @@ def write_studentassignmentquestion(
 
 @app.put("/studentassignment")
 def update_studentassignment(
+    courseid: int = Body(...),
     studentassignmentid: int = Body(...),
     totalscore: int = Body(...),
     totalcorrect: int = Body(...),
@@ -861,7 +865,7 @@ def update_studentassignment(
     db: Session = Depends(get_db),
 ):
     classroomcrud.update_student_assignment(
-        db, studentassignmentid, totalscore, totalcorrect, totalnotcorrect
+        db, courseid, studentassignmentid, totalscore, totalcorrect, totalnotcorrect
     )
 
     return 0
@@ -873,14 +877,14 @@ def read_studentnotinthiscourse(
     db: Session = Depends(get_db),
 ):
 
-  allstu= classroomcrud.read_students_notin_this_course(db, courseid)
-  studentincourse=classroomcrud.read_all_student_in_course(db,courseid)
-  result=[]
-  for stu in allstu:
-      if(stu not in studentincourse): 
-          result.append(stu)
-  
-  return result
+    allstu = classroomcrud.read_students_notin_this_course(db, courseid)
+    studentincourse = classroomcrud.read_all_student_in_course(db, courseid)
+    result = []
+    for stu in allstu:
+        if stu not in studentincourse:
+            result.append(stu)
+
+    return result
 
 
 @app.get("/{courseid}/course")
@@ -963,6 +967,7 @@ def read_course_assignment(
 
 @app.post("/write_assignment_record")
 def write_assignment_record(
+    courseid: int = Body(...),
     assignmentid: int = Body(...),
     studentscore: int = Body(...),
     db: Session = Depends(get_db),
@@ -978,7 +983,7 @@ def write_assignment_record(
         attempt = 1
 
         return classroomcrud.create_studentassignmentrecord(
-            db, assignmentid, max, min, allscore, attempt
+            db, courseid, assignmentid, max, min, allscore, attempt
         )
     else:
         if studentscore >= record.max:
@@ -994,7 +999,7 @@ def write_assignment_record(
         attempt = record.attempt + 1
 
         classroomcrud.update_student_assignment_record(
-            db, assignmentid, max, min, allscore, attempt
+            db, courseid, assignmentid, max, min, allscore, attempt
         )
 
         return record.studentassignmentrecordid
@@ -1011,10 +1016,10 @@ def write_assignment_record(
 #     lastdonetime = Column(DateTime, index=True, nullable=False)
 
 
-@app.get("/read_all_student_assignment_record")
-def read_all_student_assignment_record(db: Session = Depends(get_db)):
+@app.get("/{courseid}/read_all_student_assignment_record")
+def read_all_student_assignment_record(courseid: int, db: Session = Depends(get_db)):
 
-    return classroomcrud.read_all_student_assignment_record(db)
+    return classroomcrud.read_all_student_assignment_record(db, courseid)
 
 
 @app.get("/{courseid}/read_student_in_course")

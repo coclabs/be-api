@@ -172,6 +172,7 @@ class StudentAssignment(Base):
 
     assignmentid = Column(Integer, ForeignKey("assignment.assignmentid"))
     # courseid= Column(Integer, ForeignKey("course.courseid")
+    courseid = Column(Integer, ForeignKey("course.courseid"))
 
     totalscore = Column(Integer, index=True, nullable=False)
     totalcorrect = Column(Integer, index=True, nullable=False)
@@ -226,6 +227,7 @@ class CourseAssignment(Base):
 class StudentAssignmentRecord(Base):
     __tablename__ = "studentassignmentrecord"
     studentassignmentrecordid = Column(Integer, primary_key=True, index=True)
+    courseid = Column(Integer, ForeignKey("course.courseid"))
 
     assignmentid = Column(Integer, ForeignKey("assignment.assignmentid"))
     max = Column(Integer, index=True, nullable=False)

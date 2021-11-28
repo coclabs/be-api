@@ -174,6 +174,7 @@ def create_student(db: Session, student: schemas.StudentCreate):
 
 def create_student_assignment(
     db: Session,
+    courseid: int,
     assignmentid: int,
     totalscore: int,
     studentid: int,
@@ -182,6 +183,7 @@ def create_student_assignment(
 ):
 
     db_student_assignment = model.StudentAssignment(
+        courseid=courseid,
         assignmentid=assignmentid,
         totalscore=totalscore,
         studentid=studentid,
@@ -194,12 +196,15 @@ def create_student_assignment(
     return db_student_assignment
 
 
-def read_student_assignment(db: Session, studentid: int):
+def read_student_assignment(db: Session, courseid: int, studentid: int):
     return (
         db.query(model.StudentAssignment, model.Assignment)
         .join(model.Student)
         .join(model.Assignment)
-        .filter(model.Student.studentid == studentid)
+        .filter(
+            model.StudentAssignment.courseid == courseid,
+            model.Student.studentid == studentid,
+        )
         .order_by(model.StudentAssignment.created_at)
         .all()
     )
@@ -262,19 +267,23 @@ def create_student_assignmentquestion(
 
 def update_student_assignment(
     db: Session,
+    courseid: int,
     studentassignmentid: int,
     totalscore: int,
     totalcorrect: int,
     totalnotcorrect: int,
 ):
     db.query(model.StudentAssignment).filter(
-        model.StudentAssignment.studentassigmentid == studentassignmentid
+        model.StudentAssignment.courseid == courseid,
+        model.StudentAssignment.studentassigmentid == studentassignmentid,
     ).update({"totalscore": (totalscore)})
     db.query(model.StudentAssignment).filter(
-        model.StudentAssignment.studentassigmentid == studentassignmentid
+        model.StudentAssignment.courseid == courseid,
+        model.StudentAssignment.studentassigmentid == studentassignmentid,
     ).update({"totalcorrect": (totalcorrect)})
     db.query(model.StudentAssignment).filter(
-        model.StudentAssignment.studentassigmentid == studentassignmentid
+        model.StudentAssignment.courseid == courseid,
+        model.StudentAssignment.studentassigmentid == studentassignmentid,
     ).update({"totalnotcorrect": (totalnotcorrect)})
 
     db.commit()
@@ -282,6 +291,7 @@ def update_student_assignment(
 
 def create_studentassignmentrecord(
     db: Session,
+    courseid: int,
     assignmentid: int,
     max: int,
     min: int,
@@ -290,6 +300,7 @@ def create_studentassignmentrecord(
 ):
 
     db_student_assignment_record = model.StudentAssignmentRecord(
+        courseid=courseid,
         assignmentid=assignmentid,
         max=max,
         min=min,
@@ -312,12 +323,17 @@ def read_student_assignment_record_by_assignmentid(db: Session, assignmentid: in
     )
 
 
-def read_all_student_assignment_record(db: Session):
-    return db.query(model.StudentAssignmentRecord).all()
+def read_all_student_assignment_record(db: Session, courseid: int):
+    return (
+        db.query(model.StudentAssignmentRecord)
+        .filter(model.StudentAssignmentRecord.courseid == courseid)
+        .all()
+    )
 
 
 def update_student_assignment_record(
     db: Session,
+    courseid: int,
     assignmentid: int,
     max: int,
     min: int,
@@ -325,23 +341,28 @@ def update_student_assignment_record(
     attempt: int,
 ):
     db.query(model.StudentAssignmentRecord).filter(
-        model.StudentAssignmentRecord.assignmentid == assignmentid
+        model.StudentAssignmentRecord.courseid == courseid,
+        model.StudentAssignmentRecord.assignmentid == assignmentid,
     ).update({"max": (max)})
 
     db.query(model.StudentAssignmentRecord).filter(
-        model.StudentAssignmentRecord.assignmentid == assignmentid
+        model.StudentAssignmentRecord.courseid == courseid,
+        model.StudentAssignmentRecord.assignmentid == assignmentid,
     ).update({"min": (min)})
 
     db.query(model.StudentAssignmentRecord).filter(
-        model.StudentAssignmentRecord.assignmentid == assignmentid
+        model.StudentAssignmentRecord.courseid == courseid,
+        model.StudentAssignmentRecord.assignmentid == assignmentid,
     ).update({"allscore": (allscore)})
 
     db.query(model.StudentAssignmentRecord).filter(
-        model.StudentAssignmentRecord.assignmentid == assignmentid
+        model.StudentAssignmentRecord.courseid == courseid,
+        model.StudentAssignmentRecord.assignmentid == assignmentid,
     ).update({"attempt": (attempt)})
 
     db.query(model.StudentAssignmentRecord).filter(
-        model.StudentAssignmentRecord.assignmentid == assignmentid
+        model.StudentAssignmentRecord.courseid == courseid,
+        model.StudentAssignmentRecord.assignmentid == assignmentid,
     ).update({"lastdonetime": (datetime.now())})
 
     db.commit()
